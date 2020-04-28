@@ -1,0 +1,17 @@
+template_path: "remote/sc-product-s3-synapse.yaml"
+stack_name: "sc-product-s3-synapse-tthyer"
+stack_tags:
+  Department: "Platform"
+  Project: "Infrastructure"
+  OwnerEmail: "it@sagebase.org"
+dependencies:
+  - "tthyer/sc-portfolio-s3-tthyer.yaml"
+parameters:
+  PortfolioId: !stack_output_external sc-portfolio-s3-tthyer::SCS3portfolioId
+  #RepoRootURL: "https://s3.amazonaws.com/{{stack_group_config.admincentral_cf_bucket}}/{{stack_group_config.service_catalog_library}}/master/"
+  RepoRootURL: "https://raw.githubusercontent.com/tthyer/scipool-infra/sandbox/templates/tthyer/"
+  StackDatetime: !date
+  ProductName: "TTHYER-DEV Synapse S3 Bucket"
+hooks:
+  before_launch:
+    - !cmd "curl https://s3.amazonaws.com/{{stack_group_config.admincentral_cf_bucket}}/{{stack_group_config.service_catalog_library}}/master/s3/sc-product-s3-synapse.yaml --create-dirs -o templates/remote/sc-product-s3-synapse.yaml"

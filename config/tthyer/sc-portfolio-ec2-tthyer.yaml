@@ -1,0 +1,7 @@
+template_path: "remote/sc-portfolio-ec2.yaml"
+stack_name: "sc-portfolio-ec2-tthyer"
+parameters:
+  PorfolioName: TTHYER-DEV EC2 Portfolio
+hooks:
+  before_launch:
+    - !cmd "curl https://s3.amazonaws.com/{{stack_group_config.admincentral_cf_bucket}}/{{stack_group_config.service_catalog_library}}/master/ec2/sc-portfolio-ec2.yaml --create-dirs -o templates/remote/sc-portfolio-ec2.yaml"

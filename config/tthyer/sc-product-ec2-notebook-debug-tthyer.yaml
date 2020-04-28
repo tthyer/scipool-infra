@@ -1,0 +1,14 @@
+template_path: "tthyer/ec2/sc-product-ec2-linux-notebook-tthyer.yaml"
+stack_name: "sc-product-ec2-notebook-debug-tthyer"
+stack_tags:
+  Department: "Platform"
+  Project: "Infrastructure"
+  OwnerEmail: "it@sagebase.org"
+parameters:
+  PortfolioId: !stack_output_external sc-portfolio-ec2-tthyer::SCEC2portfolioId
+  #RepoRootURL: "https://s3.amazonaws.com/{{stack_group_config.admincentral_cf_bucket}}/{{stack_group_config.service_catalog_library}}/master/"
+  RepoRootURL: "https://raw.githubusercontent.com/tthyer/scipool-infra/sandbox/templates/tthyer/"
+  #RepoRootURL: "https://raw.githubusercontent.com/tthyer/scipool-infra/d104ef9b7f0e5e04d543ddd93b7dbe3d8a19be12/templates/tthyer/"
+  StackDatetime: !date "%Y-%m-%dT%H:%M:%S"
+  ProductName: "TTHYER-DEV EC2 Notebook for Debugging"
+  VpcName: {{stack_group_config.internal_portfolio_vpcname}}

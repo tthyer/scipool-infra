@@ -1,0 +1,11 @@
+template_path: "remote/sc-portfolio-s3-basic.yaml"
+stack_name: "sc-portfolio-s3-tthyer"
+stack_tags:
+  Department: "Platform"
+  Project: "Infrastructure"
+  OwnerEmail: "it@sagebase.org"
+parameters:
+  PorfolioName: TTHYER-DEV S3 Portfolio
+hooks:
+  before_launch:
+    - !cmd "curl https://s3.amazonaws.com/{{stack_group_config.admincentral_cf_bucket}}/{{stack_group_config.service_catalog_library}}/master/s3/sc-portfolio-s3-basic.yaml --create-dirs -o templates/remote/sc-portfolio-s3-basic.yaml"

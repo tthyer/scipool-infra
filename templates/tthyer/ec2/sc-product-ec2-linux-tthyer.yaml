@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Linux EC2 ServiceCatalog product with Jumpcloud integration.
+Parameters:
+  PortfolioProvider:
+    Type: String
+    Description: Owner and Distributor Name
+    Default: IT Services
+  RepoRootURL:
+    Type: String
+    Description: Root url for the repo containing the product templates.
+  StackDatetime:
+    Type: String
+    Description: Last updated date and time of portfolio
+    Default: ''
+  PortfolioId:
+    Type: String
+    Description: ID of the portfolio that will contain this product
+  ProductName:
+    Type: String
+    Description: Name of the product that will be visible to the end user
+    Default: 'EC2 Linux with Jumpcloud Integration'
+  VpcName:
+    Type: String
+    Description: The VPC to put resources into
+Resources:
+  scec2linuxproduct:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3002 
+    Properties:
+      Name: !Ref ProductName
+      Description: This product builds one Linux EC2 instance, either
+        Amazon Linux or Ubuntu, with Jumpcloud integration.
+      Owner: !Ref 'PortfolioProvider'
+      Distributor: !Ref 'PortfolioProvider'
+      ProvisioningArtifactParameters:
+        - Description: !Sub 'Baseline version. Last portfolio update occurred at ${StackDatetime}.'
+          Info:
+            LoadTemplateFromURL: !Sub '${RepoRootURL}ec2/sc-ec2-linux-jumpcloud-v1.0.0.yaml'
+          Name: 'v1.0.0'
+      'Fn::Transform':
+        Name: 'AWS::Include'
+        Parameters:
+          Location : "s3://cfn-snippets-bucket-cloudformationsnippetsbucket-elu83sv8ocdz/scipoolprod-sc-lib-infra/support.yaml"
+      ReplaceProvisioningArtifacts: true
+  Associateec2linux:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      ProductId: !Ref 'scec2linuxproduct'
+  constraintec2linux:
+    Type: AWS::ServiceCatalog::LaunchRoleConstraint
+    DependsOn: Associateec2linux
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      ProductId: !Ref 'scec2linuxproduct'
+      RoleArn: !ImportValue
+        'Fn::Sub': '${AWS::Region}-sc-ec2vpc-launchrole-LaunchRoleArn'
+Outputs:
+  ProductId:
+    Value: !Ref 'scec2linuxproduct'
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-ProductId'
+  VpcName:
+    Value: !Ref VpcName
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-VpcName'
