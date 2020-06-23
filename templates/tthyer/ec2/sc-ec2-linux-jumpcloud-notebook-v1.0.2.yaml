@@ -19,8 +19,7 @@ Metadata:
 Mappings:
   NotebookTypes:
     Rstudio:
-      #AMIID: "ami-0d0ad473db2efe954"  # https://github.com/Sage-Bionetworks-IT/packer-rstudio/tree/v1.0.6
-      AMIID: "ami-09b544a2635b2fa78" # build of rstudio with relocation error fix
+      AMIID: "ami-0ed2999f7cff2e3e3"  # https://github.com/Sage-Bionetworks-IT/packer-rstudio/tree/v1.0.7
 Parameters:
   VpcName:
     Type: String
@@ -280,7 +279,7 @@ Resources:
         set_env_vars:
           files:
             /opt/sage/bin/make_env_vars_file.sh:
-              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/SC-182/debug/linux/opt/sage/bin/make_env_vars_file.sh"
+              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.5/linux/opt/sage/bin/make_env_vars_file.sh"
               mode: "00744"
               owner: "root"
               group: "root"
@@ -302,7 +301,7 @@ Resources:
         config_jc:
           files:
             /opt/sage/bin/associate_jc_systems.py:
-              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.4/linux/opt/sage/bin/associate_jc_systems.py"
+              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.5/linux/opt/sage/bin/associate_jc_systems.py"
               mode: "00744"
               owner: "root"
               group: "root"
@@ -327,7 +326,7 @@ Resources:
         TagInstance:
           files:
             /opt/sage/bin/apply_name_tag.sh:
-              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.4/linux/opt/sage/bin/apply_name_tag.sh"
+              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.5/linux/opt/sage/bin/apply_name_tag.sh"
               mode: "00744"
               owner: "root"
               group: "root"
@@ -364,10 +363,6 @@ Resources:
           Value: "yes"
         - Key: "PatchGroup"
           Value: "prod-default"
-          #The session name appended to this roleid becomes the value of the AccessApprovedCaller tag
-        - Key: "AccessApprovedRoleId"
-          Value: !ImportValue
-            'Fn::Sub': '${AWS::Region}-sc-enduser-iam-ServiceCatalogEndusers-RoleId'
 Outputs:
   LinuxInstanceId:
     Description: 'The ID of the EC2 instance'

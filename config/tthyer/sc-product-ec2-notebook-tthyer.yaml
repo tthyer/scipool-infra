@@ -1,5 +1,5 @@
 template_path: "tthyer/ec2/sc-product-ec2-linux-notebook-tthyer.yaml"
-stack_name: "sc-product-ec2-notebook-debug-tthyer"
+stack_name: "sc-product-ec2-notebook-tthyer"
 stack_tags:
   Department: "Platform"
   Project: "Infrastructure"

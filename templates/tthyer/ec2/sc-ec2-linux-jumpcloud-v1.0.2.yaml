@@ -19,9 +19,7 @@ Metadata:
 Mappings:
   LinuxDistributions:
     Ubuntu:
-      AMIID: "ami-0b3cd3dbc1c827a0d" # remove ssm snap install and install aws-cli as recommended
-      #AMIID: "ami-04771cbcece93de14" # rebuild of v1.0.8 -- change order 
-      #AMIID: "ami-09ddd854571a732be"  # https://github.com/Sage-Bionetworks-IT/packer-base-ubuntu-bionic/tree/v1.0.8
+      AMIID: "ami-0b7906ab614596e7e"  # https://github.com/Sage-Bionetworks-IT/packer-base-ubuntu-bionic/tree/v1.0.9
     AmazonLinux:
       AMIID: "ami-0810a318c4b1243c5"  # https://github.com/Sage-Bionetworks-IT/packer-base-amazonlinux2/tree/v1.0.2
 Parameters:
@@ -286,7 +284,7 @@ Resources:
         set_env_vars:
           files:
             /opt/sage/bin/make_env_vars_file.sh:
-              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/SC-182/debug/linux/opt/sage/bin/make_env_vars_file.sh"
+              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.5/linux/opt/sage/bin/make_env_vars_file.sh"
               mode: "00744"
               owner: "root"
               group: "root"
@@ -308,7 +306,7 @@ Resources:
         config_jc:
           files:
             /opt/sage/bin/associate_jc_systems.py:
-              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.4/linux/opt/sage/bin/associate_jc_systems.py"
+              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.5/linux/opt/sage/bin/associate_jc_systems.py"
               mode: "00744"
               owner: "root"
               group: "root"
@@ -333,7 +331,7 @@ Resources:
         TagInstance:
           files:
             /opt/sage/bin/apply_name_tag.sh:
-              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.4/linux/opt/sage/bin/apply_name_tag.sh"
+              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.5/linux/opt/sage/bin/apply_name_tag.sh"
               mode: "00744"
               owner: "root"
               group: "root"
@@ -370,10 +368,6 @@ Resources:
           Value: "yes"
         - Key: "PatchGroup"
           Value: "prod-default"
-          #The session name appended to this roleid becomes the value of the AccessApprovedCaller tag
-        - Key: "AccessApprovedRoleId"
-          Value: !ImportValue
-            'Fn::Sub': '${AWS::Region}-sc-enduser-iam-ServiceCatalogEndusers-RoleId'
 Outputs:
   LinuxInstanceId:
     Description: 'The ID of the EC2 instance'
