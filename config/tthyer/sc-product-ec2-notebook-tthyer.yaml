@@ -10,5 +10,5 @@ parameters:
   RepoRootURL: "https://raw.githubusercontent.com/tthyer/scipool-infra/sandbox/templates/tthyer/"
   #RepoRootURL: "https://raw.githubusercontent.com/tthyer/scipool-infra/d104ef9b7f0e5e04d543ddd93b7dbe3d8a19be12/templates/tthyer/"
   StackDatetime: !date "%Y-%m-%dT%H:%M:%S"
-  ProductName: "TTHYER-DEV EC2 Notebook for Debugging"
+  ProductName: "TTHYER-DEV EC2 Notebook"
   VpcName: {{stack_group_config.internal_portfolio_vpcname}}
