@@ -1,0 +1,11 @@
+template_path: "tthyer/ec2/sc-product-ec2-linux-workflows-tthyer.yaml"
+stack_name: "sc-product-ec2-workflows-tthyer"
+stack_tags:
+  Department: "Platform"
+  Project: "Infrastructure"
+  OwnerEmail: "it@sagebase.org"
+parameters:
+  PortfolioId: !stack_output_external sc-portfolio-ec2-tthyer::SCEC2portfolioId
+  RepoRootURL: "https://raw.githubusercontent.com/tthyer/scipool-infra/2ce80eec3047bc90d612970167f4715e1181b619/templates/tthyer/"
+  StackDatetime: !date "%Y-%m-%dT%H:%M:%S"
+  ProductName: "TTHYER-DEV EC2 Workflows"
