@@ -14,10 +14,6 @@ Metadata:
       VolumeSize:
         default: Disk Size
 Parameters:
-  VpcName:
-    Type: String
-    Description: The VPC to put resources into
-    Default: 'cesspoolvpc'
   EC2InstanceType:
     AllowedValues:
       - c4.large
@@ -174,6 +170,14 @@ Parameters:
     Default: 16
     MinValue: 16
     MaxValue: 2000
+Mappings:
+  AccountToImportParams:
+    "465877038949":   # org-sagebase-scipooldev
+      PrivateSubnet: "us-east-1-cesspoolvpc-PrivateSubnet"
+      VpnSecurityGroup: "us-east-1-cesspoolvpc-VpnSecurityGroup"
+    "237179673806":   # org-sagebase-scipoolprod
+      PrivateSubnet: "us-east-1-internalpoolvpc-PrivateSubnet"
+      VpnSecurityGroup: "us-east-1-internalpoolvpc-VpnSecurityGroup"
 Resources:
   InstanceRole:
     Type: AWS::IAM::Role
@@ -216,9 +220,6 @@ Resources:
             - cfn_hup_service
           SetEnv:
             - set_env_vars
-          SetTags:
-            - TagRootVolume
-            - TagInstance
         cfn_hup_service:
           files:
             /etc/cfn/cfn-hup.conf:
@@ -236,7 +237,7 @@ Resources:
                 [cfn-auto-reloader-hook]
                 triggers=post.update
                 path=Resources.LinuxInstance.Metadata.AWS::CloudFormation::Init
-                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LinuxInstance --configsets SetupCfn,SetEnv,SetTags --region ${AWS::Region}
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LinuxInstance --configsets SetupCfn,SetEnv --region ${AWS::Region}
               mode: "000400"
               owner: root
               group: root
@@ -274,37 +275,14 @@ Resources:
                 AWS_REGION: !Ref AWS::Region
                 STACK_NAME: !Ref AWS::StackName
                 STACK_ID: !Ref AWS::StackId
-        TagRootVolume:
-          commands:
-            01_tag_root_disk:
-              command: |
-                . /opt/sage/bin/instance_env_vars.sh ;\
-                /usr/bin/aws ec2 create-tags --region $AWS_REGION --resources $ROOT_DISK_ID \
-                  --tags Key=Name,Value=$EC2_INSTANCE_ID-root Key=cloudformation:stack-name,Value=$STACK_NAME \
-                  Key=Department,Value=$DEPARTMENT Key=Project,Value=$PROJECT Key=OwnerEmail,Value=$OWNER_EMAIL
-        TagInstance:
-          files:
-            /opt/sage/bin/apply_name_tag.sh:
-              source: "https://raw.githubusercontent.com/Sage-Bionetworks/service-catalog-utils/v1.0.5/linux/opt/sage/bin/apply_name_tag.sh"
-              mode: "00744"
-              owner: "root"
-              group: "root"
-          commands:
-            01_name_tag:
-              command: "/bin/bash /opt/sage/bin/apply_name_tag.sh"
-        add_docker_user:
-          commands:
-            01_add_jc_user_to_docker_group:
-              command: "/usr/sbin/useradd -m ssm-user -G docker"
-              test: "/usr/bin/test $(/usr/bin/groups ssm-user | /bin/grep docker | /usr/bin/wc -l) -eq 1"
-              ignoreErrors: true
     Properties:
-      ImageId: "ami-0aa07b115676a7bb0"  # https://github.com/Sage-Bionetworks-IT/packer-workflows/releases/tag/v1.0.5
+      ImageId: "ami-033de8bb079bc9d59"  # https://github.com/Sage-Bionetworks-IT/packer-workflows/releases/tag/v1.0.5
       InstanceType: !Ref 'EC2InstanceType'
       SubnetId: !ImportValue
-        'Fn::Sub': '${AWS::Region}-${VpcName}-PrivateSubnet'
+          'Fn::FindInMap': [AccountToImportParams, !Ref "AWS::AccountId", PrivateSubnet]
       SecurityGroupIds:
-        - 'Fn::ImportValue': !Sub '${AWS::Region}-${VpcName}-VpnSecurityGroup'
+        - !ImportValue
+          'Fn::FindInMap': [AccountToImportParams, !Ref "AWS::AccountId", VpnSecurityGroup]
       KeyName: 'scipool'
       BlockDeviceMappings:
         -
@@ -317,9 +295,12 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
+          # This temporary fix adds the ssm-user here -- adding in init config
+          # isn't working.
           /usr/sbin/useradd -m ssm-user -G docker
-          echo "ssm-user ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/ssm-user
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LinuxInstance --configsets SetupCfn,SetEnv,SetTags --region ${AWS::Region}
+          /bin/echo "ssm-user ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/ssm-user
+          /bin/chmod 0440 /etc/sudoers.d/ssm-user
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LinuxInstance --configsets SetupCfn,SetEnv --region ${AWS::Region}
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource LinuxInstance --region ${AWS::Region}
       Tags:
         - Key: Name
@@ -333,6 +314,13 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
+  TagInstance:
+    DependsOn: "InstanceProfile"
+    Type: Custom::SynapseTagger
+    Properties:
+      ServiceToken: !ImportValue
+        'Fn::Sub': '${AWS::Region}-cfn-cr-synapse-tagger-SetInstanceTagsFunctionArn'
+      InstanceId: !Ref LinuxInstance
 Outputs:
   LinuxInstanceId:
     Description: 'The ID of the EC2 instance'
